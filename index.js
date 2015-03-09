@@ -6,7 +6,7 @@ var cheerio       = require('cheerio');
 var open          = require('open');
 
 var CACHE         = false;
-var TIMER         = 3600;
+var TIMER         = 10000;
 var dollarPath    = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)";
 var variationPath = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(4) > span";
 
@@ -28,6 +28,8 @@ var me = function () {
       var $         = cheerio.load(body);
       var dollar    = parseFloat($(dollarPath).text().replace(',', '.'));
       var variation = $(variationPath).text();
+
+      console.log('Cotação atual: ' + dollar + ' ' + variation);
 
       if (!CACHE || (CACHE < dollar)) {
         CACHE = dollar;
