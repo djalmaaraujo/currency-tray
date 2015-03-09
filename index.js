@@ -25,8 +25,8 @@ var notify = function (dollar, variacao) {
 var me = function () {
   request('http://economia.uol.com.br/cotacoes/', function (error, response, body) {
     if (!error && response.statusCode == 200) {
-      var $      = cheerio.load(body);
-      var dollar = parseFloat($(dollarPath).text().replace(',', '.'));
+      var $         = cheerio.load(body);
+      var dollar    = parseFloat($(dollarPath).text().replace(',', '.'));
       var variation = $(variationPath).text();
 
       if (!CACHE || (CACHE < dollar)) {
