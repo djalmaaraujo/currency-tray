@@ -1,11 +1,12 @@
-var notifier = require('node-notifier');
-var path     = require('path');
-var request  = require('request');
-var fs       = require('fs');
-var cheerio  = require('cheerio');
-var open     = require('open');
+var notifier      = require('node-notifier');
+var path          = require('path');
+var request       = require('request');
+var fs            = require('fs');
+var cheerio       = require('cheerio');
+var open          = require('open');
 
 var CACHE         = false;
+var TIMER         = 3600;
 var dollarPath    = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)";
 var variationPath = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(4) > span";
 
@@ -13,8 +14,7 @@ var notify = function (dollar, variacao) {
   notifier.notify({
     title: 'Ói o dóla!',
     message: '1 USD = R$' + dollar + ' (' + variacao + ')',
-    icon: path.join(__dirname, 'icon.png'),
-    sound: true
+    icon: path.join(__dirname, 'icon.png')
   });
 
   notifier.on('click', function (notifierObject, options) {
@@ -37,4 +37,6 @@ var me = function () {
   });
 }
 
-me();
+setInterval(function () {
+  me();
+}, TIMER);
