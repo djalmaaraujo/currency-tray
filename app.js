@@ -21,18 +21,16 @@ var CurrencyTray = {
     request(FETCH_URL, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         var $         = cheerio.load(body);
-        var dollar    = parseFloat($(dollarPath).text().replace(',', '.'));
+        var dollar    = parseFloat($(dollarPath).text().replace(',', '.')).toFixed(3);
         var variation = $(variationPath).text();
 
         CurrencyTray.currency(dollar);
         CurrencyTray.variation(variation);
 
-        CurrencyTraySystem.updateTitle(dollar + ' ' + DEFAULT_CURRENCY);
-        CurrencyTraySystem.updateTooltip(dollar, variation);
+        CurrencyTraySystem.updateTitle(dollar);
       }
       else {
-        CurrencyTraySystem.updateTitle(CurrencyTray.currency() + ' ' + DEFAULT_CURRENCY);
-        CurrencyTraySystem.updateTooltip(CurrencyTray.currency(), CurrencyTray.variation());
+        CurrencyTraySystem.updateTitle(CurrencyTray.currency());
       }
     });
   },
@@ -79,10 +77,6 @@ var CurrencyTraySystem = {
 
   updateTitle: function (title) {
     TRAY.title = title.replace('.', ',');
-  },
-
-  updateTooltip: function (dollar, variation) {
-    TRAY.tooltip = '1 USD = ' + dollar + ' ' + DEFAULT_CURRENCY + ' (' + variation + ')';
   }
 };
 
