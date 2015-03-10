@@ -1,8 +1,24 @@
 {
-  "name": "dollar-notify",
-  "version": "0.0.1",
-  "description": "Show BRL = X",
-  "main": "index.js",
+  "name": "currency-tray",
+  "description": "currency-tray for OSX",
+  "license": "MIT",
+  "repository": "git@github.com:djalmaaraujo/currency-tray.git",
+  "author": {
+    "name": "Djalma Araujo",
+    "email": "djalma.araujo@gmail.com",
+    "url": "http://resume.djalmaaraujo.com"
+  },
+
+  "keywords": [
+    "tool",
+    "app",
+    "ui",
+    "osx",
+    "tray"
+  ],
+
+  "private": "true",
+
   "dependencies": {
     "cheerio": "^0.18.0",
     "node-notifier": "^4.1.2",
@@ -10,25 +26,15 @@
     "path": "^0.11.14",
     "request": "^2.53.0"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+
+  "window": {
+    "show": true,
+    "show_in_taskbar": true
   },
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:djalmaaraujo/brlx.git"
-  },
-  "keywords": [
-    "brl",
-    "usd",
-    "dollar",
-    "uol",
-    "cotacoes"
-  ],
-  "author": "Djalma Araújo",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/djalmaaraujo/brlx/issues"
-  },
-  "homepage": "https://github.com/djalmaaraujo/brlx"
+
+  "main": "index.html",
+
+  "webkit": {
+    "plugin": true
+  }
 }
