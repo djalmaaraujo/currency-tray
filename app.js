@@ -10,7 +10,7 @@ var gui      = require('nw.gui');
 
 var TRAY
     , TRAY_MENU
-    , REFRESH_TIMER    = 60000 // 30s
+    , REFRESH_TIMER    = 60000 // 60s
     , FETCH_URL        = 'http://economia.uol.com.br/cotacoes/'
     , dollarPath       = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)"
     , variationPath    = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(4) > span"
