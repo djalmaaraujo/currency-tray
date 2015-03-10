@@ -8,7 +8,6 @@ var cheerio  = require('cheerio');
 var open     = require('open');
 var gui      = require('nw.gui');
 
-
 var TRAY
     , TRAY_MENU
     , REFRESH_TIMER    = 60000 // 30s
@@ -63,7 +62,19 @@ var CurrencyTray = {
 
 var CurrencyTraySystem = {
   createTray: function () {
-    TRAY      = new gui.Tray({ icon: 'icon.png' });
+    TRAY = new gui.Tray({ icon: 'icon.png' });
+    TRAY_MENU  = new gui.Menu();
+
+    var quitMenu = new gui.MenuItem({
+      type: 'checkbox'
+      , label: 'Quit'
+      , click: function () {
+        gui.App.quit();
+      }
+    })
+
+    TRAY_MENU.append(quitMenu);
+    TRAY.menu = TRAY_MENU;
   },
 
   updateTitle: function (title) {
