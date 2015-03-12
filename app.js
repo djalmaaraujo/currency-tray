@@ -130,7 +130,7 @@ var CurrencyTrayNotifier = {
       localStorage.setItem(ctNotificationStatus, status)
     }
     else {
-      return (localStorage.getItem(ctNotificationStatus) == "true") ? true : false;
+      return ((localStorage.getItem(ctNotificationStatus) == "true") || (localStorage.getItem(ctNotificationStatus) == "")) ? true : false;
     }
   }
 };
