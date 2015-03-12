@@ -25,13 +25,8 @@ var CurrencyTray = {
     request(FETCH_URL, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         var $         = cheerio.load(body);
-        var currency  = parseFloat($(CURRENCY_PATH).text().replace(',', '.')).toFixed(3);
+        var currency  = parseFloat($(CURRENCY_PATH).text().replace(',', '.'));
         var variation = $(variationPath).text();
-
-        CurrencyTray.currency(currency);
-        CurrencyTray.variation(variation);
-
-        CurrencyTraySystem.updateTitle(currency);
 
         if (currency > CurrencyTray.currency()) {
           var notificationTitle = 'Dollar up!';
@@ -39,6 +34,11 @@ var CurrencyTray = {
 
           CurrencyTrayNotifier.notify(notificationTitle, notificationBody);
         }
+
+        CurrencyTray.currency(currency);
+        CurrencyTray.variation(variation);
+
+        CurrencyTraySystem.updateTitle(currency);
       }
       else {
         CurrencyTraySystem.updateTitle(CurrencyTray.currency());
@@ -53,7 +53,7 @@ var CurrencyTray = {
       localStorage.setItem(ctCurrenty, currency)
     }
     else {
-      return localStorage.getItem(ctCurrenty);
+      return parseFloat(localStorage.getItem(ctCurrenty));
     }
   },
 
@@ -103,7 +103,7 @@ var CurrencyTraySystem = {
   },
 
   updateTitle: function (title) {
-    TRAY.title = title.replace('.', ',');
+    TRAY.title = title.toString().replace('.', ',').substr(0, 5);
   }
 };
 
