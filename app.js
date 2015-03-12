@@ -1,49 +1,60 @@
 'use strict';
 
-var notifier = require('node-notifier');
 var path     = require('path');
 var request  = require('request');
 var fs       = require('fs');
 var cheerio  = require('cheerio');
-var open     = require('open');
 var gui      = require('nw.gui');
 
 var TRAY
     , TRAY_MENU
-    , REFRESH_TIMER    = 60000 // 60s
-    , FETCH_URL        = 'http://economia.uol.com.br/cotacoes/'
-    , CURRENCY_PATH    = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)"
-    , variationPath    = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(4) > span"
-    , DEFAULT_CURRENCY = 'BRL';
+    , FETCH_CLOCK_START        = 8
+    , FETCH_CLOCK_STOP         = 18
+    , REFRESH_TIMER            = 60000 // 60s
+    , NOTIFICATION_CLOSE_TIMER = 3000
+    , FETCH_URL                = 'http://economia.uol.com.br/cotacoes/'
+    , CURRENCY_PATH            = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)"
+    , variationPath            = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(4) > span"
+    , DEFAULT_CURRENCY         = 'BRL';
 
 //
 // Currency Tray
 //
 
-var CurrencyTray = {
+var CT = {
   fetch: function () {
+    if (!CT.canFetch()) {
+      return false;
+    }
+
     request(FETCH_URL, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         var $         = cheerio.load(body);
         var currency  = parseFloat($(CURRENCY_PATH).text().replace(',', '.'));
         var variation = $(variationPath).text();
 
-        if (currency > CurrencyTray.currency()) {
-          var notificationTitle = 'Dollar up!';
+        if (currency > CT.currency()) {
+          var notificationTitle = 'Dollar getting better!';
           var notificationBody  = currency + ' ' + DEFAULT_CURRENCY + ' (' + variation + ')';
 
-          CurrencyTrayNotifier.notify(notificationTitle, notificationBody);
+          CTNotifier.notify(notificationTitle, notificationBody);
         }
 
-        CurrencyTray.currency(currency);
-        CurrencyTray.variation(variation);
+        CT.currency(currency);
+        CT.variation(variation);
 
-        CurrencyTraySystem.updateTitle(currency);
+        CTSystem.updateTitle(currency);
       }
       else {
-        CurrencyTraySystem.updateTitle(CurrencyTray.currency());
+        CTSystem.updateTitle(CT.currency());
       }
     });
+  },
+
+  canFetch: function () {
+    var hours = new Date().getHours();
+
+    return ((hours >= FETCH_CLOCK_START) && (hours <= FETCH_CLOCK_STOP)) ? true : false;
   },
 
   currency: function (currency) {
@@ -73,7 +84,7 @@ var CurrencyTray = {
 // Tray Menu
 //
 
-var CurrencyTraySystem = {
+var CTSystem = {
   createTray: function () {
     TRAY = new gui.Tray({ icon: 'icon.png' });
     TRAY_MENU  = new gui.Menu();
@@ -89,11 +100,11 @@ var CurrencyTraySystem = {
     var notificationsMenu = new gui.MenuItem({
       type: 'checkbox'
       , label: 'Enable Notifications'
-      , checked: CurrencyTrayNotifier.status()
+      , checked: CTNotifier.status()
       , click: function (something) {
-        var status = CurrencyTrayNotifier.status();
+        var status = CTNotifier.status();
 
-        CurrencyTrayNotifier.status((status) ? "false" : "true");
+        CTNotifier.status((status) ? "false" : "true");
       }
     })
 
@@ -111,15 +122,21 @@ var CurrencyTraySystem = {
 // Notifier
 //
 
-var CurrencyTrayNotifier = {
+var CTNotifier = {
   notify: function (title, body) {
-    if (CurrencyTrayNotifier.status()) {
-      notifier.notify({
-        title: title,
-        message: body,
-        icon: 'icon@2x.png',
-        sound: true
-      });
+    if (!CTNotifier.status()) {
+      return false;
+    }
+
+    var options = {
+      icon: "icon.png",
+      body: body
+    };
+
+    var notification = new Notification(title, options);
+
+    notification.onshow = function () {
+      setTimeout(function() { notification.close(); }, NOTIFICATION_CLOSE_TIMER);
     }
   },
 
@@ -135,9 +152,9 @@ var CurrencyTrayNotifier = {
   }
 };
 
-CurrencyTraySystem.createTray();
-CurrencyTray.fetch();
+CTSystem.createTray();
+CT.fetch();
 
 setInterval(function () {
-  CurrencyTray.fetch();
+  CT.fetch();
 }, REFRESH_TIMER);
