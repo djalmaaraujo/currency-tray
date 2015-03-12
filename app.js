@@ -12,22 +12,33 @@ var TRAY
     , TRAY_MENU
     , REFRESH_TIMER    = 60000 // 60s
     , FETCH_URL        = 'http://economia.uol.com.br/cotacoes/'
-    , dollarPath       = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)"
+    , CURRENCY_PATH    = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)"
     , variationPath    = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(4) > span"
     , DEFAULT_CURRENCY = 'BRL';
+
+//
+// Currency Tray
+//
 
 var CurrencyTray = {
   fetch: function () {
     request(FETCH_URL, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         var $         = cheerio.load(body);
-        var dollar    = parseFloat($(dollarPath).text().replace(',', '.')).toFixed(3);
+        var currency  = parseFloat($(CURRENCY_PATH).text().replace(',', '.')).toFixed(3);
         var variation = $(variationPath).text();
 
-        CurrencyTray.currency(dollar);
+        CurrencyTray.currency(currency);
         CurrencyTray.variation(variation);
 
-        CurrencyTraySystem.updateTitle(dollar);
+        CurrencyTraySystem.updateTitle(currency);
+
+        if (currency > CurrencyTray.currency()) {
+          var notificationTitle = 'Dollar up!';
+          var notificationBody  = currency + ' ' + DEFAULT_CURRENCY + ' (' + variation + ')';
+
+          CurrencyTrayNotifier.notify(notificationTitle, notificationBody);
+        }
       }
       else {
         CurrencyTraySystem.updateTitle(CurrencyTray.currency());
@@ -42,7 +53,7 @@ var CurrencyTray = {
       localStorage.setItem(ctCurrenty, currency)
     }
     else {
-      localStorage.getItem(ctCurrenty);
+      return localStorage.getItem(ctCurrenty);
     }
   },
 
@@ -53,10 +64,14 @@ var CurrencyTray = {
       localStorage.setItem(ctVariation, variation)
     }
     else {
-      localStorage.getItem(ctVariation);
+      return localStorage.getItem(ctVariation);
     }
   }
 };
+
+//
+// Tray Menu
+//
 
 var CurrencyTraySystem = {
   createTray: function () {
@@ -69,14 +84,54 @@ var CurrencyTraySystem = {
       , click: function () {
         gui.App.quit();
       }
+    });
+
+    var notificationsMenu = new gui.MenuItem({
+      type: 'checkbox'
+      , label: 'Enable Notifications'
+      , checked: CurrencyTrayNotifier.status()
+      , click: function (something) {
+        var status = CurrencyTrayNotifier.status();
+
+        CurrencyTrayNotifier.status((status) ? "false" : "true");
+      }
     })
 
+    TRAY_MENU.append(notificationsMenu);
     TRAY_MENU.append(quitMenu);
     TRAY.menu = TRAY_MENU;
   },
 
   updateTitle: function (title) {
     TRAY.title = title.replace('.', ',');
+  }
+};
+
+//
+// Notifier
+//
+
+var CurrencyTrayNotifier = {
+  notify: function (title, body) {
+    if (CurrencyTrayNotifier.status()) {
+      notifier.notify({
+        title: title,
+        message: body,
+        icon: 'icon@2x.png',
+        sound: true
+      });
+    }
+  },
+
+  status: function (status) {
+    var ctNotificationStatus = 'ct_notification_status';
+
+    if (status !== undefined) {
+      localStorage.setItem(ctNotificationStatus, status)
+    }
+    else {
+      return (localStorage.getItem(ctNotificationStatus) == "true") ? true : false;
+    }
   }
 };
 
