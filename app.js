@@ -11,11 +11,12 @@ var TRAY
     , FETCH_CLOCK_START        = 8
     , FETCH_CLOCK_STOP         = 18
     , REFRESH_TIMER            = 60000 // 60s
-    , NOTIFICATION_CLOSE_TIMER = 3000
-    , FETCH_URL                = 'http://economia.uol.com.br/cotacoes/'
-    , CURRENCY_PATH            = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(3)"
-    , variationPath            = "#conteudo > div > section > div.colunas.colunas2 > div:nth-child(1) > div.colunas.colunas3 > div:nth-child(1) > section:nth-child(1) > table > tbody > tr:nth-child(1) > td:nth-child(4) > span"
-    , DEFAULT_CURRENCY         = 'BRL';
+    , NOTIFICATION_CLOSE_TIMER = 7000
+    , FETCH_URL                = 'http://www.reuters.com/finance/currencies/quote?srcAmt=1.00&srcCurr=USD&destAmt=&destCurr=BRL'
+    , CURRENCY_PATH            = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div.fourUp.currQuote > div.norm.currData.changeDown"
+    , CURRENCY_MAX_PATH        = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div:nth-child(2) > div"
+    , CURRENCY_MIN_PATH        = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div:nth-child(3) > div"
+    , DEFAULT_CURRENCY         = 'R$';
 
 //
 // Currency Tray
@@ -30,18 +31,19 @@ var CT = {
     request(FETCH_URL, function (error, response, body) {
       if (!error && response.statusCode == 200) {
         var $         = cheerio.load(body);
-        var currency  = parseFloat($(CURRENCY_PATH).text().replace(',', '.'));
-        var variation = $(variationPath).text();
+        var currency  = parseFloat($(CURRENCY_PATH).text().trim());
+        var currencyMAX  = parseFloat($(CURRENCY_MAX_PATH).text().trim());
+        var currencyMIN  = parseFloat($(CURRENCY_MIN_PATH).text().trim());
+        debugger;
 
         if (currency > CT.currency()) {
-          var notificationTitle = 'Dollar getting better!';
-          var notificationBody  = currency + ' ' + DEFAULT_CURRENCY + ' (' + variation + ')';
+          var notificationTitle = DEFAULT_CURRENCY + currency + ' Subiu!';
+          var notificationBody  = 'Max: ' + DEFAULT_CURRENCY + currencyMAX + '  / Min: ' + DEFAULT_CURRENCY + currencyMIN;
 
           CTNotifier.notify(notificationTitle, notificationBody);
         }
 
         CT.currency(currency);
-        CT.variation(variation);
 
         CTSystem.updateTitle(currency);
       }
@@ -65,17 +67,6 @@ var CT = {
     }
     else {
       return parseFloat(localStorage.getItem(ctCurrenty));
-    }
-  },
-
-  variation: function (variation) {
-    var ctVariation = 'ct_variation';
-
-    if (variation) {
-      localStorage.setItem(ctVariation, variation)
-    }
-    else {
-      return localStorage.getItem(ctVariation);
     }
   }
 };
@@ -114,7 +105,7 @@ var CTSystem = {
   },
 
   updateTitle: function (title) {
-    TRAY.title = title.toString().replace('.', ',').substr(0, 5);
+    TRAY.title = title.toString().substr(0, 5);
   }
 };
 

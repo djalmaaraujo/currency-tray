@@ -29,7 +29,7 @@
 
   "window": {
     "show": false,
-    "show_in_taskbar": false
+    "show_in_taskbar": true
   },
 
   "main": "index.html",
