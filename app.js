@@ -13,7 +13,7 @@ var TRAY
     , REFRESH_TIMER            = 60000 // 60s
     , NOTIFICATION_CLOSE_TIMER = 7000
     , FETCH_URL                = 'http://www.reuters.com/finance/currencies/quote?srcAmt=1.00&srcCurr=USD&destAmt=&destCurr=BRL'
-    , CURRENCY_PATH            = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div.fourUp.currQuote > div.norm.currData.changeDown"
+    , CURRENCY_PATH            = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div.fourUp.currQuote > div.norm.currData"
     , CURRENCY_MAX_PATH        = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div:nth-child(2) > div"
     , CURRENCY_MIN_PATH        = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div:nth-child(3) > div"
     , DEFAULT_CURRENCY         = 'R$';
