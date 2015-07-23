@@ -9,9 +9,10 @@ var gui      = require('nw.gui');
 var TRAY
     , TRAY_MENU
     , FETCH_CLOCK_START        = 8
+    , PAYPAL_EXAMPLE_FEE       = 3.5
     , FETCH_CLOCK_STOP         = 18
     , REFRESH_TIMER            = 60000 // 60s
-    , NOTIFICATION_CLOSE_TIMER = 7000
+    , NOTIFICATION_CLOSE_TIMER = 6000
     , FETCH_URL                = 'http://www.reuters.com/finance/currencies/quote?srcAmt=1.00&srcCurr=USD&destAmt=&destCurr=BRL'
     , CURRENCY_PATH            = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div.fourUp.currQuote > div.norm.currData"
     , CURRENCY_MAX_PATH        = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div:nth-child(2) > div"
@@ -34,11 +35,10 @@ var CT = {
         var currency  = parseFloat($(CURRENCY_PATH).text().trim());
         var currencyMAX  = parseFloat($(CURRENCY_MAX_PATH).text().trim());
         var currencyMIN  = parseFloat($(CURRENCY_MIN_PATH).text().trim());
-        debugger;
 
         if (currency > CT.currency()) {
-          var notificationTitle = DEFAULT_CURRENCY + currency + ' Subiu!';
-          var notificationBody  = 'Max: ' + DEFAULT_CURRENCY + currencyMAX + '  / Min: ' + DEFAULT_CURRENCY + currencyMIN;
+          var notificationTitle = DEFAULT_CURRENCY + currency + ' up!';
+          var notificationBody  = "Max: " + DEFAULT_CURRENCY + currencyMAX + " / Min: " + DEFAULT_CURRENCY + currencyMIN + "\n Paypal: ~" + DEFAULT_CURRENCY + CT.paypalCalc(currency);
 
           CTNotifier.notify(notificationTitle, notificationBody);
         }
@@ -51,6 +51,12 @@ var CT = {
         CTSystem.updateTitle(CT.currency());
       }
     });
+  },
+
+  paypalCalc: function (currency) {
+    var fee = CTNotifier.paypalFee() / 100;
+
+    return parseFloat(currency - (currency * fee)).toFixed(3);
   },
 
   canFetch: function () {
@@ -97,9 +103,20 @@ var CTSystem = {
 
         CTNotifier.status((status) ? "false" : "true");
       }
-    })
+    });
+
+    var paypalFeeQuestions = new gui.MenuItem({
+      type: 'normal'
+      , label: 'Define Paypal FEE'
+      , click: function () {
+        var paypalStatus = CTNotifier.paypalFee();
+
+        CTNotifier.paypalFee(prompt("Type the Paypal Fee. Ex: 3.5", CTNotifier.paypalFee()))
+      }
+    });
 
     TRAY_MENU.append(notificationsMenu);
+    TRAY_MENU.append(paypalFeeQuestions);
     TRAY_MENU.append(quitMenu);
     TRAY.menu = TRAY_MENU;
   },
@@ -135,10 +152,24 @@ var CTNotifier = {
     var ctNotificationStatus = 'ct_notification_status';
 
     if (status !== undefined) {
-      localStorage.setItem(ctNotificationStatus, status)
+      localStorage.setItem(ctNotificationStatus, status);
     }
     else {
       return ((localStorage.getItem(ctNotificationStatus) == "true") || (localStorage.getItem(ctNotificationStatus) == "")) ? true : false;
+    }
+  },
+
+  paypalFee: function (fee) {
+    var ctNotificatioPaypalFee = 'ct_notification_paypal_fee';
+
+    if (fee !== undefined) {
+      fee = fee.replace(',', '.')
+      fee = fee.replace('%', '')
+
+      localStorage.setItem(ctNotificatioPaypalFee, parseFloat(fee));
+    }
+    else {
+      return (localStorage.getItem(ctNotificatioPaypalFee) !== "null") ? localStorage.getItem(ctNotificatioPaypalFee) : PAYPAL_EXAMPLE_FEE;
     }
   }
 };
