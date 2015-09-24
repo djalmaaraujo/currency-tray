@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-var path     = require('path');
-var request  = require('request');
-var fs       = require('fs');
-var cheerio  = require('cheerio');
-var gui      = require('nw.gui');
+var path     = require("path");
+var request  = require("request");
+var fs       = require("fs");
+var cheerio  = require("cheerio");
+var gui      = require("nw.gui");
 
 var TRAY
     , TRAY_MENU
@@ -13,11 +13,10 @@ var TRAY
     , FETCH_CLOCK_STOP         = 18
     , REFRESH_TIMER            = 60000 // 60s
     , NOTIFICATION_CLOSE_TIMER = 6000
-    , FETCH_URL                = 'http://www.reuters.com/finance/currencies/quote?srcAmt=1.00&srcCurr=USD&destAmt=&destCurr=BRL'
-    , CURRENCY_PATH            = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div.fourUp.currQuote > div.norm.currData"
-    , CURRENCY_MAX_PATH        = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div:nth-child(2) > div"
-    , CURRENCY_MIN_PATH        = "#topContent > div > div.sectionColumns > div.column1.gridPanel.grid8 > div:nth-child(1) > div.moduleBody > div:nth-child(1) > div:nth-child(3) > div"
-    , DEFAULT_CURRENCY         = 'R$';
+    , FETCH_URL                = "http://br.investing.com/currencies/usd-brl-chart"
+    , CURRENCY_PATH            = "#last_last"
+    , CURRENCY_VARIATION_PATH  = "#quotes_summary_secondary_data > div > ul > li:nth-child(3) > span:nth-child(2)"
+    , DEFAULT_CURRENCY         = "R$";
 
 //
 // Currency Tray
@@ -29,15 +28,16 @@ var CT = {
       return false;
     }
 
-    request(FETCH_URL, function (error, response, body) {
+    request({url: FETCH_URL, headers: {'User-Agent': CT.randomUserAgent()}}, function (error, response, body) {
       if (!error && response.statusCode == 200) {
-        var $         = cheerio.load(body);
-        var currency  = parseFloat($(CURRENCY_PATH).text().trim());
-        var currencyMAX  = parseFloat($(CURRENCY_MAX_PATH).text().trim());
-        var currencyMIN  = parseFloat($(CURRENCY_MIN_PATH).text().trim());
+        var $           = cheerio.load(body);
+        var currency    = CT.parseNumber($(CURRENCY_PATH).text().trim());
+        var variation   = CT.parseVariation($(CURRENCY_VARIATION_PATH).text().trim())
+        var currencyMIN = CT.parseNumber(variation[0]);
+        var currencyMAX = CT.parseNumber(variation[1]);
 
         if (currency > CT.currency()) {
-          var notificationTitle = DEFAULT_CURRENCY + currency + ' up!';
+          var notificationTitle = DEFAULT_CURRENCY + currency + " up!";
           var notificationBody  = "Max: " + DEFAULT_CURRENCY + currencyMAX + " / Min: " + DEFAULT_CURRENCY + currencyMIN + "\n Paypal: ~" + DEFAULT_CURRENCY + CT.paypalCalc(currency);
 
           CTNotifier.notify(notificationTitle, notificationBody);
@@ -53,6 +53,20 @@ var CT = {
     });
   },
 
+  randomUserAgent: function () {
+    var items = ['Internet Explorer', 'Chrome', 'Mozilla', 'Safari'];
+
+    return items[Math.floor(Math.random()*items.length)];
+  },
+
+  parseVariation: function (num) {
+    return num.split('-').map(function (n) { return n.trim(); });
+  },
+
+  parseNumber: function (num) {
+    return parseFloat(num.replace(",", "."));
+  },
+
   paypalCalc: function (currency) {
     var fee = CTNotifier.paypalFee() / 100;
 
@@ -66,7 +80,7 @@ var CT = {
   },
 
   currency: function (currency) {
-    var ctCurrenty = 'ct_currency';
+    var ctCurrenty = "ct_currency";
 
     if (currency) {
       localStorage.setItem(ctCurrenty, currency)
@@ -83,20 +97,20 @@ var CT = {
 
 var CTSystem = {
   createTray: function () {
-    TRAY = new gui.Tray({ icon: 'icon.png' });
+    TRAY = new gui.Tray({ icon: "icon.png" });
     TRAY_MENU  = new gui.Menu();
 
     var quitMenu = new gui.MenuItem({
-      type: 'checkbox'
-      , label: 'Quit'
+      type: "checkbox"
+      , label: "Quit"
       , click: function () {
         gui.App.quit();
       }
     });
 
     var notificationsMenu = new gui.MenuItem({
-      type: 'checkbox'
-      , label: 'Enable Notifications'
+      type: "checkbox"
+      , label: "Enable Notifications"
       , checked: CTNotifier.status()
       , click: function (something) {
         var status = CTNotifier.status();
@@ -106,8 +120,8 @@ var CTSystem = {
     });
 
     var paypalFeeQuestions = new gui.MenuItem({
-      type: 'normal'
-      , label: 'Define Paypal FEE'
+      type: "normal"
+      , label: "Define Paypal FEE"
       , click: function () {
         var paypalStatus = CTNotifier.paypalFee();
 
@@ -149,7 +163,7 @@ var CTNotifier = {
   },
 
   status: function (status) {
-    var ctNotificationStatus = 'ct_notification_status';
+    var ctNotificationStatus = "ct_notification_status";
 
     if (status !== undefined) {
       localStorage.setItem(ctNotificationStatus, status);
@@ -160,11 +174,11 @@ var CTNotifier = {
   },
 
   paypalFee: function (fee) {
-    var ctNotificatioPaypalFee = 'ct_notification_paypal_fee';
+    var ctNotificatioPaypalFee = "ct_notification_paypal_fee";
 
     if (fee !== undefined) {
-      fee = fee.replace(',', '.')
-      fee = fee.replace('%', '')
+      fee = fee.replace(",", ".")
+      fee = fee.replace("%", "")
 
       localStorage.setItem(ctNotificatioPaypalFee, parseFloat(fee));
     }
