@@ -8,4 +8,4 @@ Preview:
 
 ![image](https://raw.githubusercontent.com/djalmaaraujo/currency-tray/master/preview.png)
 
-## Download OSX: [Here](https://github.com/djalmaaraujo/currency-tray/releases/download/0.0.3-final/CurrencyTray.app.zip)
+## Download OSX: [Here](https://github.com/djalmaaraujo/currency-tray/releases/download/0.0.4-investing/CurrencyTray.0.0.4-investing.zip)
